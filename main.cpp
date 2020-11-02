@@ -11,26 +11,28 @@ using namespace std;
 #define PI2 6.2831853071
 
 int read_lammpstrj(const char*, const int, const int) ;
-
+void calc_rdf( double, string, string ) ;
 
 int main( const int argc, const char* argv[] ) {
 
-  if ( argc < 2 ) {
-    cout << "Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index]" << endl;
+  if ( argc < 7 ) {
+    cout << "Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index] [dr_bin] [type1] [type2]" << endl;
     exit(1);
   }
 
   int fr1 = stoi(argv[2]);
   int fr2 = stoi(argv[3]);
 
-  int frs = read_lammpstrj(argv[1], fr1, fr2);
+  nframes = read_lammpstrj(argv[1], fr1, fr2);
 
-  if ( frs != ( fr2 - fr1 ) ) {
+  if ( nframes != ( fr2 - fr1 ) ) {
     cout << "Mismatch in frames read and input!" << endl;
     exit(1);
   }
 
-  cout << xt[frs-1][nsites-1][0] << " " << xt[frs-1][nsites-1][1] << endl;
+  string tp1(argv[5]);
+  string tp2(argv[6]);
+  calc_rdf( stod(argv[4]), tp1, tp2 );
 
   return 0;
 }
