@@ -36,6 +36,7 @@ int read_lammpstrj( const char* name, const int frame1, const int lastframe) {
   n_computes = 0;
 
   int nread = 0, time0, time1; 
+  int nstored = 0;
 
   int frs = lastframe - frame1 ;
 
@@ -84,8 +85,9 @@ int read_lammpstrj( const char* name, const int frame1, const int lastframe) {
       bx >> todub ;
       double xhi = stod(todub);
 
-      L[nread][j] = xhi - xlo ;
+      if ( nread >= frame1 ) L[nread-frame1][j] = xhi - xlo ;
     }
+
 
     // read in ITEM: ATOMS line
     getline(inp, line);
@@ -122,6 +124,10 @@ int read_lammpstrj( const char* name, const int frame1, const int lastframe) {
     for ( int i=0 ; i<nsites ; i++ ) {
       getline(inp, line) ;
 
+      if ( nread < frame1 )
+        continue ;
+
+
       istringstream is2(line);
       string toint, tofloat ;
 
@@ -130,37 +136,37 @@ int read_lammpstrj( const char* name, const int frame1, const int lastframe) {
         
         if ( j == id_col ) {
           is2 >> toint ;
-          if ( nread == 0 ) id[i] = stoi(toint);
+          if ( nread == frame1 ) id[i] = stoi(toint);
         }
 
         else if ( j == mol_col ) {
           is2 >> toint ;
-          if ( nread == 0 ) mol[i] = stoi(toint);
+          if ( nread == frame1 ) mol[i] = stoi(toint);
         }
 
         else if ( j == type_col ) {
           is2 >> toint ; 
-          if ( nread == 0 ) type[i] = stoi(toint);
+          if ( nread == frame1 ) type[i] = stoi(toint);
         }
 
         else if ( j == x_pos_col ) {
           is2 >> tofloat ;
-          xt[nread-frame1][i][0] = stod(tofloat) ;
+          if ( nread >= frame1 ) xt[nread-frame1][i][0] = stod(tofloat) ;
         }
 
         else if ( j == x_pos_col + 1 ) {
           is2 >> tofloat ;
-          xt[nread-frame1][i][1] = stod(tofloat) ;
+          if ( nread >= frame1 ) xt[nread-frame1][i][1] = stod(tofloat) ;
         }
 
         else if ( j == x_pos_col + 2) {
           is2 >> tofloat ;
-          xt[nread-frame1][i][2] = stod(tofloat) ;
+          if ( nread >= frame1 ) xt[nread-frame1][i][2] = stod(tofloat) ;
         }
 
         else { 
           is2 >> tofloat ;
-          computes[nread-frame1][i][j-n_computes] = stod(tofloat);
+          if ( nread >= frame1 ) computes[nread-frame1][i][j-n_computes] = stod(tofloat);
         }
 
 
@@ -170,9 +176,11 @@ int read_lammpstrj( const char* name, const int frame1, const int lastframe) {
     nread++;
     if ( nread == lastframe ) 
       break ;
+    if ( nread >= frame1 )
+      nstored++;
 
   }// while ( !inp.eof() )
-  return nread ;
+  return nstored ;
 }
 
 
