@@ -11,7 +11,8 @@ using namespace std;
 #define PI2 6.2831853071
 
 int read_lammpstrj(const char*, const int, const int) ;
-
+void remove_pbc_time_jumps(vector<vector<vector<double>>>, int, int, vector<vector<double>>) ;
+void calc_msd(vector<vector<vector<double>>>, int, int, vector<vector<double>> );
 
 int main( const int argc, const char* argv[] ) {
 
@@ -30,7 +31,9 @@ int main( const int argc, const char* argv[] ) {
     exit(1);
   }
 
-  cout << xt[frs-1][nsites-1][0] << " " << xt[frs-1][nsites-1][1] << endl;
+  remove_pbc_time_jumps(xt, nsites, nframes, L);
+  
+  calc_msd(xt, nsites, nframes, L);
 
   return 0;
 }
