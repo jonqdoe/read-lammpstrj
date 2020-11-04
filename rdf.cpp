@@ -110,18 +110,25 @@ void calc_rdf( double drbin, string type1, string type2 ) {
   avg_vol = avg_vol / double(nframes) ;
 
   double norm1 = avg_vol / double( ns1 * ns2 * nframes ) ;
+  if ( tp1 == tp2 )
+    norm1 = avg_vol / double( ns1 * (ns2-1) * nframes ) ;
 
   for ( int i=0 ; i<n_r_bins ; i++ ) {
-    double v1 = double(pow(i,3));
-    double v2 = double(pow(i+1,3));
+    double v1 = double(i*i*i);
+    double v2 = double( (i+1) * (i+1) * (i+1) );
 
     double shell_vol = (v2 - v1) * drbin*drbin*drbin * 4.0 * PI / 3.0 ;
 
-    //gr[i] = shell_vol ;
     gr[i] *= norm1 / shell_vol ;
   }// i=0:n_r_bins
 
 
+
+
+
+  //////////////////
+  // Write output //
+  //////////////////
   ofstream otp("gr.dat");
 
   for ( int i=0 ; i<n_r_bins-1 ; i++ ) 
