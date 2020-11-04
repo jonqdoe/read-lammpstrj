@@ -16,7 +16,7 @@ void calc_msd(vector<vector<vector<double>>>, int, int, vector<vector<double>> )
 
 int main( const int argc, const char* argv[] ) {
 
-  if ( argc < 2 ) {
+  if ( argc < 4 ) {
     cout << "Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index]" << endl;
     exit(1);
   }
