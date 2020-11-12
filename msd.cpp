@@ -3,16 +3,19 @@
 #include <string>
 #include <stdio.h>
 #include <vector>
-using namespace std;
-
 #include "log_space.h"
+
+using namespace std;
 
 void log_space(int,int,int);
 double pbc_mdr2(vector<double>, vector<double>, vector<double>, vector<double>);
 
-void calc_msd( vector<vector<vector<double>>> xt, int nsites, int nframes, vector<vector<double>> L ) {
+void calc_msd( vector<vector<vector<double>>> xt,
+    const int nsites, 
+    const int nfr, 
+    vector<vector<double>> L ) {
 
-  log_space(1,nframes,nframes/2) ;
+  log_space(1,nfr,nfr/2) ;
 
   vector<double> msd(n_times,0), dr(3);
 
@@ -20,7 +23,7 @@ void calc_msd( vector<vector<vector<double>>> xt, int nsites, int nframes, vecto
 
     int delt = times[ti] ;
 
-    for ( int t=0 ; t<nframes-delt ; t++ ) {
+    for ( int t=0 ; t<nfr-delt ; t++ ) {
 
       for ( int i=0 ; i<nsites ; i++ ) {
 
@@ -30,7 +33,7 @@ void calc_msd( vector<vector<vector<double>>> xt, int nsites, int nframes, vecto
 
       }// i=0:nsites
 
-    }// t=0:nframes-delt
+    }// t=0:nfr-delt
 
   }// ti=0:n_times
 
@@ -39,7 +42,7 @@ void calc_msd( vector<vector<vector<double>>> xt, int nsites, int nframes, vecto
   for ( int ti=0 ; ti<n_times ; ti++ ) {
     int delt = times[ti] ;
     
-    msd[ti] *= ( 1.0 / double(nsites * (nframes-delt) ) ) ;
+    msd[ti] *= ( 1.0 / double(nsites * (nfr-delt) ) ) ;
 
     otp << ti << " " << msd[ti] << endl;
 

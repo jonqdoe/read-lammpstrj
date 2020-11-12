@@ -1,17 +1,21 @@
 #define LOG_SPACE
-#include "math.h"
-#include "stdlib.h"
-#include "stdio.h"
+#include <cmath>
+#include <iostream>
 #include "log_space.h"
+
+using namespace std ;
 
 void log_space(int low, int high, int NP) {
   high -= 1;
 
   int i, j;
-  double lg_low = log10(low);
-  double lg_high = log10(high);
+  double lg_low = log10(double(low));
+  double lg_high = log10(double(high));
   double spacing = (lg_high - lg_low) / (double)NP;
-  
+ 
+  cout << lg_low << " " << lg_high << " " << spacing << endl;
+  cout << low << " " << high << " " << NP << endl;
+
   int *temp;
   temp = (int* ) calloc(NP,sizeof(int));
   double arg;

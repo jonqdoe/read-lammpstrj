@@ -12,7 +12,8 @@ using namespace std;
 
 int read_lammpstrj(const char*, const int, const int) ;
 void remove_pbc_time_jumps(vector<vector<vector<double>>>, int, int, vector<vector<double>>) ;
-void calc_msd(vector<vector<vector<double>>>, int, int, vector<vector<double>> );
+void calc_msd(vector<vector<vector<double>>>, const int, const int, vector<vector<double>> );
+
 
 int main( const int argc, const char* argv[] ) {
 
@@ -30,10 +31,12 @@ int main( const int argc, const char* argv[] ) {
     cout << "Mismatch in frames read and input!" << endl;
     exit(1);
   }
-
-  remove_pbc_time_jumps(xt, nsites, nframes, L);
   
-  calc_msd(xt, nsites, nframes, L);
+  cout << frs << " frames read" << endl;
+
+  remove_pbc_time_jumps(xt, nsites, frs, L);
+
+  calc_msd(xt, nsites, frs, L);
 
   return 0;
 }
