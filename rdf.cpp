@@ -58,15 +58,19 @@ void calc_rdf( double drbin, string type1, string type2 ) {
         bx_min = L[t][j] ;
 
 
+
   // Number of bins in g(r)
   int n_r_bins = int( bx_min / 2.0 / drbin ) + 1;
   cout << "Allocating " << n_r_bins << " bins for g(r)" << endl;
 
+
   // allocate g(r)
-  vector<double> gr(n_r_bins);
+  vector<double> gr(n_r_bins, 0.0);
 
   vector<double> dr(3);
   double max_dr2 = bx_min * bx_min / 4.0 ;
+
+  int counter = 0;
 
   // Main calculation loop for g(r)
   for ( int t=0 ; t<nframes ; t++ ) {
@@ -82,8 +86,9 @@ void calc_rdf( double drbin, string type1, string type2 ) {
           continue ;
 
         double mdr2 = pbc_mdr2( xt[t][i], xt[t][j], dr, L[t] ) ;
-        if ( mdr2 >= max_dr2 )
+        if ( mdr2 >= max_dr2 ) {
           continue ;
+        }
 
         double mdr = sqrt(mdr2);
         int r_bin = int( mdr / drbin );
@@ -96,7 +101,7 @@ void calc_rdf( double drbin, string type1, string type2 ) {
         gr[r_bin] += 1.0 ;
 
       }// j=i+1:nsites
-    }// i=i:nsites-1
+    }// i=i:nsites
   }// t=0:frs
 
 
