@@ -11,8 +11,8 @@ double pbc_mdr2( vector<double> ri, vector<double> rj, vector<double> dr, vector
 
   for ( int j=0 ; j<3 ; j++ ) {
     dr[j] = ri[j] - rj[j] ;
-    if ( dr[j] > L[j] ) dr[j] -= L[j] * 0.5 ;
-    else if ( dr[j] < -L[j] ) dr[j] += L[j] * 0.5 ;
+    if ( dr[j] > L[j]*0.5 ) dr[j] -= L[j] ;
+    else if ( dr[j] < -L[j]*0.5 ) dr[j] += L[j] ;
 
     mdr2 += dr[j] * dr[j] ;
   }
