@@ -131,55 +131,71 @@ int read_lammpstrj( const char* name, const int frame1, const int lastframe) {
       istringstream is2(line);
       string toint, tofloat ;
 
+      int cur_ind = -1;
+
       for ( int j=0 ; j<n_col ; j++ ) {
 
         
         if ( j == id_col ) {
           is2 >> toint ;
-          if ( nread == frame1 ) id[i] = stoi(toint);
+          cur_ind = stoi(toint)-1;
+          if ( nread == frame1 ) id[cur_ind] = stoi(toint);
         }
 
         else if ( j == mol_col ) {
           is2 >> toint ;
-          if ( nread == frame1 ) mol[i] = stoi(toint);
+          if ( cur_ind == -1 ) { cout << "index error!" << endl; exit(1); }
+          if ( nread == frame1 ) mol[cur_ind] = stoi(toint);
         }
 
         else if ( j == type_col ) {
           is2 >> toint ; 
-          if ( nread == frame1 ) type[i] = stoi(toint);
+          if ( cur_ind == -1 ) { cout << "index error!" << endl; exit(1); }
+          if ( nread == frame1 ) type[cur_ind] = stoi(toint);
         }
 
         else if ( j == x_pos_col ) {
           is2 >> tofloat ;
-          if ( nread >= frame1 ) xt[nread-frame1][i][0] = stod(tofloat) ;
+          if ( cur_ind == -1 ) { cout << "index error!" << endl; exit(1); }
+          if ( nread >= frame1 ) xt[nread-frame1][cur_ind][0] = stod(tofloat) ;
         }
 
         else if ( j == x_pos_col + 1 ) {
           is2 >> tofloat ;
-          if ( nread >= frame1 ) xt[nread-frame1][i][1] = stod(tofloat) ;
+          if ( cur_ind == -1 ) { cout << "index error!" << endl; exit(1); }
+          if ( nread >= frame1 ) xt[nread-frame1][cur_ind][1] = stod(tofloat) ;
         }
 
         else if ( j == x_pos_col + 2) {
           is2 >> tofloat ;
-          if ( nread >= frame1 ) xt[nread-frame1][i][2] = stod(tofloat) ;
+          if ( cur_ind == -1 ) { cout << "index error!" << endl; exit(1); }
+          if ( nread >= frame1 ) xt[nread-frame1][cur_ind][2] = stod(tofloat) ;
         }
 
         else { 
           is2 >> tofloat ;
-          if ( nread >= frame1 ) computes[nread-frame1][i][j-n_computes] = stod(tofloat);
+          if ( cur_ind == -1 ) { cout << "index error!" << endl; exit(1); }
+          if ( nread >= frame1 ) computes[nread-frame1][cur_ind][j-n_computes] = stod(tofloat);
         }
 
 
       }// j=0:n_col
+
     }// i=0:nsites
 
     nread++;
-    if ( nread == lastframe ) 
-      break ;
-    if ( nread >= frame1 )
+    if ( nread > frame1 )
       nstored++;
+    if ( nread == lastframe ) {
+      cout << "Breaking before reading " << lastframe << ", kept " << nstored << endl;
+      break ;
+    }
 
   }// while ( !inp.eof() )
+  inp.close();
+
+  nframes = nstored ;
+
   return nstored ;
 }
 
