@@ -10,7 +10,7 @@ LIBS      = -lm -O3
 #############################################################################
 # nothing should be changed below here
 
-SRCS = main.cpp read_lammpstrj.cpp pbc_utils.cpp \
+SRCS = main.cpp read_lammpstrj.cpp pbc_utils.cpp lc_order.cpp \
        
        
 			 

@@ -11,12 +11,14 @@ using namespace std;
 #define PI2 6.2831853071
 
 int read_lammpstrj(const char*, const int, const int) ;
-
+void connect_molecules(vector<vector<vector<double>>>&, vector<int>, int, int, vector<vector<double>>) ;
+void lc_order(vector<vector<vector<double>>>, int, int, vector<int>, int, int);
 
 int main( const int argc, const char* argv[] ) {
 
-  if ( argc < 2 ) {
-    cout << "Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index]" << endl;
+  if ( argc < 6 ) {
+    cout << "Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index] [LC type] [sites per LC]" << endl;
+    cout << "NOTE: the LC type is the type listed in the lammpstrj file, it is not shifted to be zero indexed." << endl;
     exit(1);
   }
 
@@ -30,7 +32,18 @@ int main( const int argc, const char* argv[] ) {
     exit(1);
   }
 
-  cout << xt[frs-1][nsites-1][0] << " " << xt[frs-1][nsites-1][1] << endl;
+
+  if ( !has_type || !has_mol ) {
+    cout << "REquires both molecule id and atom type in input file!" << endl;
+    return 1 ;
+  }
+
+  connect_molecules(xt, mol, nsites, frs, L ) ;
+
+  int lc_type = stoi( argv[4] ) ;
+  int per_lc = stoi(argv[5] ) ;
+
+  lc_order(xt, nsites, frs, type, lc_type, per_lc ) ;
 
   return 0;
 }
