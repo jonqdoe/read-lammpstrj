@@ -114,9 +114,11 @@ void calc_rdf( double drbin, string type1, string type2 ) {
   }
   avg_vol = avg_vol / double(nframes) ;
 
-  double norm1 = avg_vol / double( ns1 * ns2 * nframes ) ;
+
+  double norm1 = avg_vol / ( double( ns1 ) * double( ns2 ) * double( nframes ) ) ;
   if ( tp1 == tp2 )
-    norm1 = avg_vol / double( ns1 * (ns2-1) * nframes ) ;
+    norm1 = avg_vol / ( double( ns1 ) * double( ns2-1 ) * double( nframes ) ) ;
+
 
   for ( int i=0 ; i<n_r_bins ; i++ ) {
     double v1 = double(i*i*i);
