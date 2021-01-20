@@ -10,8 +10,8 @@ LIBS      = -lm -O3
 #############################################################################
 # nothing should be changed below here
 
-SRCS = main.cpp read_lammpstrj.cpp pbc_utils.cpp lc_order.cpp \
-       
+SRCS = main.cpp read_lammpstrj.cpp pbc_utils.cpp log_space.cpp \
+       msd.cpp rdf.cpp lc_order.cpp
        
 			 
 
@@ -26,6 +26,6 @@ postproc-lammpstrj:  ${OBJS}
 
 clean:
 	rm -f *.o
-	rm -f postproc-lammpstrj
+	rm -f postproc-msd
 	rm -f *~
 

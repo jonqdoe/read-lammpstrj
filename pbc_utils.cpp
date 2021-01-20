@@ -1,7 +1,7 @@
 #include <vector>
-#include <iostream>
 
 using namespace std ;
+#include "lammpstrj.h"
 
 
 // Compute rij = ri - rj, returns |rij|^2
@@ -39,10 +39,8 @@ void connect_molecules(vector<vector<vector<double>>> & xt, vector<int> mol,
         first_id = i;
       }
 
-
       // Not on a new molecule
       else {
-
         for ( int j=0 ; j<3 ; j++ ) {
           dr[j] = xt[t][i][j] - xt[t][first_id][j] ;
           
@@ -51,7 +49,6 @@ void connect_molecules(vector<vector<vector<double>>> & xt, vector<int> mol,
 
           xt[t][i][j] = xt[t][first_id][j] + dr[j] ;
         }
-
       }
     }// i=0:ns
 
@@ -60,7 +57,10 @@ void connect_molecules(vector<vector<vector<double>>> & xt, vector<int> mol,
 }
 
 // Connects particles' trajectories in time //
-void remove_pbc_time_jumps( vector<vector<vector<double>>> & xt, int ns, int frs, vector<vector<double>> L ) {
+void remove_pbc_time_jumps( vector<vector<vector<double>>> & xt, 
+    int ns, 
+    int frs, 
+    vector<vector<double>> L ) {
 
   vector<double> dr(3);
 
@@ -69,7 +69,7 @@ void remove_pbc_time_jumps( vector<vector<vector<double>>> & xt, int ns, int frs
       for ( int j=0 ; j<3 ; j++ ) {
         dr[j] = xt[t][i][j] - xt[t+1][i][j] ;
 
-        while ( dr[j] >  L[t][j]*0.5) dr[j] -= L[t][j] ;
+        while ( dr[j] > L[t][j]*0.5 ) dr[j] -= L[t][j] ;
         while ( dr[j] < -L[t][j]*0.5) dr[j] += L[t][j] ;
 
         xt[t+1][i][j] = xt[t][i][j] - dr[j] ;

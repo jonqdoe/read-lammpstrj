@@ -11,14 +11,17 @@ using namespace std;
 #define PI2 6.2831853071
 
 int read_lammpstrj(const char*, const int, const int) ;
-void connect_molecules(vector<vector<vector<double>>>&, vector<int>, int, int, vector<vector<double>>) ;
+void connect_molecules(vector<vector<vector<double>>>&, vector<int>, int, int, 
+    vector<vector<double>>) ;
+void remove_pbc_time_jumps(vector<vector<vector<double>>>&, int, int, vector<vector<double>>) ;
 void lc_order(vector<vector<vector<double>>>, int, int, vector<int>, int, int);
+void calc_msd(vector<vector<vector<double>>>, const int, const int, vector<vector<double>> );
+void calc_rdf(double, string, string);
 
 int main( const int argc, const char* argv[] ) {
 
-  if ( argc < 6 ) {
-    cout << "Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index] [LC type] [sites per LC]" << endl;
-    cout << "NOTE: the LC type is the type listed in the lammpstrj file, it is not shifted to be zero indexed." << endl;
+  if ( argc < 4 ) {
+    cout << "Usage: ./postproc-lammpstrj [input.lammpstr] [first frame] [last frame] [calc_type]..." << endl;
     exit(1);
   }
 
@@ -31,19 +34,62 @@ int main( const int argc, const char* argv[] ) {
     cout << "Mismatch in frames read and input!" << endl;
     exit(1);
   }
+  
+  cout << frs << " frames read" << endl;
 
 
-  if ( !has_type || !has_mol ) {
-    cout << "REquires both molecule id and atom type in input file!" << endl;
-    return 1 ;
-  }
+  string calc_type(argv[4]);
 
-  connect_molecules(xt, mol, nsites, frs, L ) ;
 
-  int lc_type = stoi( argv[4] ) ;
-  int per_lc = stoi(argv[5] ) ;
+  if ( calc_type == "RDF" ) {
 
-  lc_order(xt, nsites, frs, type, lc_type, per_lc ) ;
+    if ( argc < 8 ) {
+        cout << "Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index] RDF [dr_bin] [type1] [type2]" << endl;
+        exit(1);
+    }
+
+    string tp1(argv[6]);
+    string tp2(argv[7]);
+    calc_rdf( stod(argv[5]), tp1, tp2 );
+
+  } // RDF calculation
+
+
+
+
+
+
+  else if ( calc_type == "MSD" ) {
+
+    remove_pbc_time_jumps(xt, nsites, frs, L);
+
+    calc_msd(xt, nsites, frs, L);
+  } // MSD calculation
+
+
+
+
+
+
+  else if ( calc_type == "LC_ORDER" ) {
+    if ( argc < 7 ) {
+      cout << "LC_ORDER Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index] LC_ORDER [LC type] [sites per LC]" << endl;
+      cout << "NOTE: the LC type is the type listed in the lammpstrj file, it is not shifted to be zero indexed." << endl;
+      exit(1);
+    }
+
+    if ( !has_type || !has_mol ) {
+      cout << "Requires both molecule id and atom type in input file!" << endl;
+      return 1 ;
+    }
+ 
+    connect_molecules(xt, mol, nsites, frs, L ) ;
+ 
+    int lc_type = stoi( argv[5] ) ;
+    int per_lc = stoi(argv[6] ) ;
+ 
+    lc_order(xt, nsites, frs, type, lc_type, per_lc ) ;
+  } // LC_ORDER calculation
 
   return 0;
 }
