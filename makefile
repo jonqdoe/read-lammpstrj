@@ -11,7 +11,7 @@ LIBS      = -lm -O3
 # nothing should be changed below here
 
 SRCS = main.cpp read_lammpstrj.cpp pbc_utils.cpp log_space.cpp \
-       msd.cpp rdf.cpp lc_order.cpp
+       msd.cpp rdf.cpp lc_order.cpp nl-utils.cpp
        
 			 
 

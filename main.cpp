@@ -17,6 +17,8 @@ void remove_pbc_time_jumps(vector<vector<vector<double>>>&, int, int, vector<vec
 void lc_order(vector<vector<vector<double>>>, int, int, vector<int>, int, int);
 void calc_msd(vector<vector<vector<double>>>, const int, const int, vector<vector<double>> );
 void calc_rdf(double, string, string);
+void nlist_init(void);
+
 
 int main( const int argc, const char* argv[] ) {
 
@@ -36,15 +38,24 @@ int main( const int argc, const char* argv[] ) {
   }
   
   cout << frs << " frames read" << endl;
+  nlist_init();
 
 
   string calc_type(argv[4]);
 
 
   if ( calc_type == "RDF" ) {
+#include "nl_globals.h"
+
+    void make_nlist(int, vector<vector<double>>, vector<double>, double);
+    make_nlist(nsites, xt[2], L[2], 2.75);
+    for ( int i=0 ; i<2500 ; i+=500 )
+      cout << i << " " << neigh_ct[i] << endl;
+    exit(1);
 
     if ( argc < 8 ) {
-        cout << "Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index] RDF [dr_bin] [type1] [type2]" << endl;
+        cout << "Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index] ";
+        cout << "RDF [dr_bin] [type1] [type2]" << endl;
         exit(1);
     }
 
@@ -73,7 +84,8 @@ int main( const int argc, const char* argv[] ) {
 
   else if ( calc_type == "LC_ORDER" ) {
     if ( argc < 7 ) {
-      cout << "LC_ORDER Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index] LC_ORDER [LC type] [sites per LC]" << endl;
+      cout << "Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index] ";
+      cout << "LC_ORDER [LC type] [sites per LC]" << endl;
       cout << "NOTE: the LC type is the type listed in the lammpstrj file, it is not shifted to be zero indexed." << endl;
       exit(1);
     }
