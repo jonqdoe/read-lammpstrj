@@ -44,7 +44,7 @@ void calc_msd( vector<vector<vector<double>>> xt,
 
     msd[ti] *= ( 1.0 / double(nsites * (nfr-delt) ) ) ;
 
-    otp << ti << " " << msd[ti] << endl;
+    otp << delt << " " << msd[ti] << endl;
 
   }
 
