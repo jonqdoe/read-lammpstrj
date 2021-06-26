@@ -1,8 +1,8 @@
-CC 	   = g++
+CC 	   = mpic++
 FFTW_LOC = ${HOME}/Install/fftw3
 EIGEN_LOC = ${HOME}/Install/eigen
-CFLAGS     = -O3 -Wno-unused-result -Wno-write-strings -std=c++11
-LIBS      = -lm -O3
+CFLAGS     = -O3 -I${FFTW_LOC}/include -Wno-unused-result -Wno-write-strings -std=c++11
+LIBS      = -lm -O3 -lfftw3_mpi -lfftw3 -L${FFTW_LOC}/lib
 #CFLAGS     = -g -I${FFTW_LOC}/include -I${EIGEN_LOC} -Wno-unused-result -Wno-write-strings
 #LIBS      = -g -lm -lfftw3_mpi -lfftw3 -L${FFTW_LOC}/lib
 
@@ -11,7 +11,7 @@ LIBS      = -lm -O3
 # nothing should be changed below here
 
 SRCS = main.cpp read_lammpstrj.cpp pbc_utils.cpp log_space.cpp \
-       msd.cpp rdf.cpp lc_order.cpp nl-utils.cpp
+       msd.cpp rdf.cpp lc_order.cpp nl-utils.cpp fftw_mpi_wrappers.cpp \
        
 			 
 

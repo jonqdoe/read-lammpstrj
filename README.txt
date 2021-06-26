@@ -9,10 +9,6 @@ It assumes that id, type, mol, x, y, z, if present, will all come as the first
 six columns, and that any computes will follow the z coordinate. 
 
 To do:
-- in pbc_utils.cpp, add routines that
-  i) connect molecules across the PBCs
-  ii) connect particle trajectories in tim
-
 - include the neighborlist functionality
 
 - include particle-to-mesh functionality
