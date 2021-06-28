@@ -227,7 +227,7 @@ int parse_ATOMS_line( string line ) {
       type_col = cur_col ;
     }
 
-    else if ( word2 == "x" ) {
+    else if ( word2 == "x" || word2 == "f_avg_x" ) {
       x_pos_col = cur_col ;
       isa >> word2 ;
       isa >> word2 ;
