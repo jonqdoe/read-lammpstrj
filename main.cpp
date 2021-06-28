@@ -72,6 +72,11 @@ int main( const int argc, const char* argv[] ) {
 
 
   else if ( calc_type == "MSD" ) {
+    cout << "MSD optional arguments: " << endl;
+    cout << "sitemax [integer], maximum number of sites to use in MSD calculation, ignoring some sites at the end of the position array" << endl;
+
+    if ( argc == 6 )
+      nsites = atoi( argv[5] );
 
     remove_pbc_time_jumps(xt, nsites, frs, L);
 
