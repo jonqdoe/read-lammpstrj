@@ -12,6 +12,7 @@ LIBS      = -lm -O3 -lfftw3_mpi -lfftw3 -L${FFTW_LOC}/lib
 
 SRCS = main.cpp read_lammpstrj.cpp pbc_utils.cpp log_space.cpp \
        msd.cpp rdf.cpp lc_order.cpp nl-utils.cpp fftw_mpi_wrappers.cpp \
+			 van-hove.cpp
        
 			 
 

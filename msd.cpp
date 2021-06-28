@@ -27,7 +27,11 @@ void calc_msd( vector<vector<vector<double>>> xt,
 
       for ( int i=0 ; i<nsites ; i++ ) {
 
-        double mdr2 = pbc_mdr2(xt[t][i], xt[t+delt][i], dr, L[t] ) ;
+        double mdr2 = 0.0;
+        for ( int j=0 ; j<3 ; j++ ) {
+          dr[j] = xt[t+delt][i][j] - xt[t][i][j] ;
+          mdr2 += dr[j] * dr[j];
+        }
 
         msd[ti] += mdr2 ;
 

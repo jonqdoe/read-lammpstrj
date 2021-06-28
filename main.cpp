@@ -18,6 +18,7 @@ void lc_order(vector<vector<vector<double>>>, int, int, vector<int>, int, int);
 void calc_msd(vector<vector<vector<double>>>, const int, const int, vector<vector<double>> );
 void calc_rdf(double, string, string);
 void nlist_init(void);
+void van_hove(vector<vector<vector<double>>>, int, int, int, double, vector<vector<double>> );
 
 
 int main( const int argc, const char* argv[] ) {
@@ -78,6 +79,25 @@ int main( const int argc, const char* argv[] ) {
   } // MSD calculation
 
 
+
+
+
+  else if ( calc_type == "VAN-HOVE" ) {
+    if ( argc < 7 ) {
+      cout << "Usage: VAN-HOVE [delt] [dx_bin] [optional: site_max]" << endl;
+      exit(1);
+    }
+
+    double dx_bin = atof( argv[6] );
+    int delt = atoi( argv[5] );
+
+    int sitemax = nsites ;
+    if ( argc == 8 )
+      sitemax = atoi( argv[7] );
+
+    van_hove( xt, sitemax, frs, delt, dx_bin, L);
+
+  }
 
 
 
