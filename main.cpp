@@ -1,8 +1,15 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <string.h>
 #include <stdio.h>
 #include <vector>
+#include <complex>
+#include "stdlib.h"
+#include <algorithm>
+#include "fftw.h"
+#include "io_utils.h"
+#include "mesh_globals.h"
 using namespace std;
 
 #include "lammpstrj.h"
@@ -21,17 +28,17 @@ void nlist_init(void);
 void van_hove(vector<vector<vector<double>>>, int, int, int, double, vector<vector<double>> );
 
 
-int main( const int argc, const char* argv[] ) {
+int main( int argc, char* argv[] ) {
 
   if ( argc < 4 ) {
     cout << "Usage: ./postproc-lammpstrj [input.lammpstr] [first frame] [last frame] [calc_type]..." << endl;
     exit(1);
   }
 
-  int fr1 = stoi(argv[2]);
-  int fr2 = stoi(argv[3]);
+  fr1 = stoi(argv[2]);
+  fr2 = stoi(argv[3]);
 
-  int frs = read_lammpstrj(argv[1], fr1, fr2);
+  frs = read_lammpstrj(argv[1], fr1, fr2);
 
   if ( frs != ( fr2 - fr1 ) ) {
     cout << "Mismatch in frames read and input!" << endl;
@@ -46,7 +53,7 @@ int main( const int argc, const char* argv[] ) {
 
 
   if ( calc_type == "RDF" ) {
-#include "nl_globals.h"
+    #include "nl_globals.h"
 
     void make_nlist(int, vector<vector<double>>, vector<double>, double);
     make_nlist(nsites, xt[2], L[2], 2.75);
@@ -66,11 +73,6 @@ int main( const int argc, const char* argv[] ) {
 
   } // RDF calculation
 
-
-
-
-
-
   else if ( calc_type == "MSD" ) {
     cout << "MSD optional arguments: " << endl;
     cout << "sitemax [integer], maximum number of sites to use in MSD calculation, ignoring some sites at the end of the position array" << endl;
@@ -82,10 +84,6 @@ int main( const int argc, const char* argv[] ) {
 
     calc_msd(xt, nsites, frs, L);
   } // MSD calculation
-
-
-
-
 
   else if ( calc_type == "VAN-HOVE" ) {
     if ( argc < 7 ) {
@@ -103,9 +101,6 @@ int main( const int argc, const char* argv[] ) {
     van_hove( xt, sitemax, frs, delt, dx_bin, L);
 
   }
-
-
-
 
   else if ( calc_type == "LC_ORDER" ) {
     if ( argc < 7 ) {
@@ -127,6 +122,63 @@ int main( const int argc, const char* argv[] ) {
  
     lc_order(xt, nsites, frs, type, lc_type, per_lc ) ;
   } // LC_ORDER calculation
+  else if ( calc_type == "FT_ANALYSIS" ) {
+    #include "mesh_globals.h"
+    if ( argc < 8 ) {
+      cout << "Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index] ";
+      cout << "FT_ANALYSIS PER_FRAME_SQ_FLAG [Nx] [Ny] [Nz] [type1] [type2]... \n" << endl;
+      exit(1);
+    }
+
+    if (std::string(argv[5]) == "false" || ("0" == std::string(argv[5])))
+      per_frame_sq_flag = false;
+    else if (std::string(argv[5]) == "true" || ("1" == std::string(argv[5])))
+      per_frame_sq_flag = true;
+    else {
+      cout << "PER_FRAME_SQ_FLAG must be either FALSE, TRUE, 0 or 1" << endl;
+      exit(1);
+    }
+
+    Nx[0] = atoi(argv[6]);
+    Nx[1] = atoi(argv[7]);
+    Nx[2] = atoi(argv[8]);
+    ML = Nx[0] * Nx[1] * Nx[2];
+    M = ML;
+
+    MPI_Init(&argc,&argv);
+
+    ntypes = *max_element(std::begin(type), std::end(type)); 
+    if (strcmp("all", argv[9]) == 0) {
+      unique_mol_id = type;
+    } else {
+        for (int i = 9; i <argc; i++){
+          if (atoi(argv[i]) > ntypes){
+            cout << "Please make sure the selected molecule type exists in the dump file."<< endl;
+            exit(1);
+          }
+          else if (atoi(argv[i]) < 0){
+            cout << "Please enter a non-negative molecule type." << endl;
+            exit(1);
+          }
+          else {
+            unique_mol_id.push_back(atoi(argv[i]));
+          }
+      }
+    }
+    std::sort(unique_mol_id.begin(), unique_mol_id.end());
+    vector<int>::iterator ip = std::unique(unique_mol_id.begin(), unique_mol_id.end());
+    unique_mol_id.resize(std::distance(unique_mol_id.begin(), ip));
+
+    sq_routine();
+
+    MPI_Finalize();
+
+  }
+  else {
+    cout << "Not a valid analysis command.\n";
+    cout << "Please check your spelling or consider implementing this feature into the code." << endl;
+    exit(1);
+  }
 
   return 0;
 }
