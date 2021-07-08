@@ -14,7 +14,12 @@ int pmeorder, Nx[3], M, grid_per_particle ;
 #ifndef MESHUTILS
 extern
 #endif
-std::vector<std::complex<double>> tmp1, tmp2 ;
+std::vector<std::complex<double>> tmp1 ;
+
+#ifndef MESHUTILS
+extern
+#endif
+std::vector<std::vector<std::complex<double>>> tmp2 ;
 
 #ifndef MESHUTILS
 extern
@@ -29,7 +34,7 @@ std::vector<std::vector<double>> rho, grid_W;
 #ifndef MESHUTILS
 extern
 #endif
-std::vector<int> unique_mol_id;
+std::vector<int> unique_types;
 
 #ifndef MESHUTILS
 extern

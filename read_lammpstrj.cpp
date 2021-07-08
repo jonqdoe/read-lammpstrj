@@ -92,9 +92,9 @@ int read_lammpstrj( const char* name, const int frame1, const int lastframe) {
 
       if ( nread >= frame1 ) {
         double index = nread - frame1;
-        xhi.at(nread).at(j)= xhitmp;
-        xlo.at(nread).at(j)= xlotmp;
-        L[nread-frame1][j] = xhi.at(nread).at(j) - xlo.at(nread).at(j) ;
+        xhi.at(nread-frame1).at(j)= xhitmp;
+        xlo.at(nread-frame1).at(j)= xlotmp;
+        L[nread-frame1][j] = xhi.at(nread-frame1).at(j) - xlo.at(nread-frame1).at(j) ;
       }
       
     }

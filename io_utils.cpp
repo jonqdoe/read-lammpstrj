@@ -23,7 +23,7 @@ void write_kspace_data( const char *lbl , std::complex<double> *kdt ) {
   
   char nm[80] ;
 
-  sprintf( nm, "data/%s.%d.dat" , lbl,t ) ;
+  sprintf( nm, "data/%s.dat" , lbl ) ;
   char *mm;
   mm = (char*) nm;
 

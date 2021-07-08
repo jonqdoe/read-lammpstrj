@@ -157,7 +157,7 @@ int main( int argc, char* argv[] ) {
     ntypes = *max_element(std::begin(type), std::end(type)); 
     for (int i = 9; i <argc; i++){
       if (strcmp("all", argv[i]) == 0) {
-        unique_mol_id = type;
+        unique_types = type;
       } else if (string(argv[i]) == "k2_cutoff"){
           k2_cutoff = atof(argv[i+1]);
           i += 1;
@@ -172,13 +172,13 @@ int main( int argc, char* argv[] ) {
           cout << "Please enter a non-negative molecule type." << endl;
           exit(1);
       } else {
-          unique_mol_id.push_back(atoi(argv[i]));
+          unique_types.push_back(atoi(argv[i]));
         }
     }
 
-    std::sort(unique_mol_id.begin(), unique_mol_id.end());
-    vector<int>::iterator ip = std::unique(unique_mol_id.begin(), unique_mol_id.end());
-    unique_mol_id.resize(std::distance(unique_mol_id.begin(), ip));
+    std::sort(unique_types.begin(), unique_types.end());
+    vector<int>::iterator ip = std::unique(unique_types.begin(), unique_types.end());
+    unique_types.resize(std::distance(unique_types.begin(), ip));
 
     sq_routine();
 
@@ -239,7 +239,7 @@ int main( int argc, char* argv[] ) {
     ntypes = *max_element(std::begin(type), std::end(type)); 
     for (int i = 5; i <argc; i++){
       if (strcmp("all", argv[i]) == 0) {
-        unique_mol_id = type;
+        unique_types = type;
       } else if (string(argv[i]) == "cutoff"){
         border = atof(argv[i+1]);
         i += 1;
@@ -250,15 +250,15 @@ int main( int argc, char* argv[] ) {
           cout << "Please enter a non-negative molecule type." << endl;
           exit(1);
       } else {
-          unique_mol_id.push_back(atoi(argv[i]));
+          unique_types.push_back(atoi(argv[i]));
         }
     }
 
-    std::sort(unique_mol_id.begin(), unique_mol_id.end());
-    vector<int>::iterator ip = std::unique(unique_mol_id.begin(), unique_mol_id.end());
-    unique_mol_id.resize(std::distance(unique_mol_id.begin(), ip));
+    std::sort(unique_types.begin(), unique_types.end());
+    vector<int>::iterator ip = std::unique(unique_types.begin(), unique_types.end());
+    unique_types.resize(std::distance(unique_types.begin(), ip));
 
-    cluster_analysis(unique_mol_id, border);
+    cluster_analysis(unique_types, border);
 
   } else {
     cout << "Not a valid analysis type.\n";

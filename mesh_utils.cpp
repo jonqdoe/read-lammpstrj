@@ -14,7 +14,7 @@ void add_charge( int ) ;
 void charge_grid(void);
 
 
-int t;
+int t=0,tt=0;
 
 void sq_routine(){
 
@@ -22,48 +22,62 @@ void sq_routine(){
 
     allocate_grid_variables();
 
-    for (auto type : unique_mol_id){
+    for (vector<complex<double>> &x: tmp2)
+      fill(x.begin(), x.end(), 0.0f);
 
-      for (auto &x: tmp1){ x = 0.0f; }
-      for (auto &x: tmp2){ x = 0.0f; }
-
-      for (t=0; t<frs; t++) {
-        printf("\rTimestep %d out of %d", t, frs); fflush( stdout );
+    for (tt=0; tt<frs; tt++) {
+        t = tt+fr1;
+        printf("\rTimestep %d out of %d", tt, frs); fflush( stdout );
 
         V = 1; 
-        vector<double> &Lloc = L.at(t);
+        vector<double> &Lloc = L.at(tt);
         for (int j=0 ; j<Dim ; j++ ) {
           V *= Lloc.at(j) ;
           dx[j] = Lloc.at(j)/Nx[j]; 
           Lh[j] = 0.5 * Lloc[j] ;
         }
         gvol = V / double( M ) ;
-        
+
+        for (auto &x: tmp1){ x = 0.0f; }
+        // for (auto &x: tmp2){ x = 0.0f; }
+
+
         charge_grid();
 
+        for (auto type : unique_types){
 
-        const vector<double> &tmp_rho = rho.at(type);
+          const vector<double> &tmp_rho = rho.at(type);
 
-        fftw_fwd( tmp_rho.data(), tmp1.data(), M ) ;
+          fftw_fwd( tmp_rho.data(), tmp1.data(), M ) ;
 
-        for (int i=0 ; i<M ; i++ ){
-          tmp1.at(i) = tmp1.at(i) * conj(tmp1.at(i)) ;
+          for (int i=0 ; i<M ; i++ ){
+            tmp2.at(type).at(i) += tmp1.at(i);
+            tmp1.at(i) = tmp1.at(i) * conj(tmp1.at(i)) ;
+          }
+          
+          if (per_frame_sq_flag == true || frs == 1){
+            std::string strdata = "sq.time."+to_string(t)+".type"+to_string(type);
+            write_kspace_data(strdata.c_str(), tmp1.data());
+          }
+          // for (int i = 0; i < tmp2.size(); i++){
+          // tmp2.at(i) += tmp1.at(i);
+          // }
         }
-        
-        if (per_frame_sq_flag == true){
-          std::string strdata = "sq.time."+to_string(t+fr1)+".type"+to_string(type);
-          write_kspace_data(strdata.c_str(), tmp1.data());
-        }
-        for (int i = 0; i < tmp2.size(); i++){
-        tmp2.at(i) += tmp1.at(i);
-        }
-      }
       
+
+    }
+
+    tt--;
+
+    if (frs > 1){
+      for (auto type : unique_types){
         for (int i = 0; i < tmp2.size(); i++){
-          tmp2.at(i) /= frs;
+          tmp2.at(type).at(i) = tmp2.at(type).at(i) * conj(tmp2.at(type).at(i)) ;
+          tmp2.at(type).at(i) /= frs;
         }
-      std::string strdata = "sq.avg."+to_string(frs)+".type"+to_string(type);
-      write_kspace_data(strdata.c_str(), tmp2.data());
+          std::string strdata = "sq.avg."+to_string(fr1)+"_"+to_string(fr2)+".type"+to_string(type);
+          write_kspace_data(strdata.c_str(), tmp2.at(type).data());
+        }
     }
 }
 
@@ -85,7 +99,7 @@ void charge_grid(void){
   int id=9;
   j=0;
   int t=0;
-  // cout<<x[t][id][0]<<'\t'<<dx[j]<<endl;
+
   for ( i=0 ; i<nsites; i++ ) {
     if ( type.at(i) != -1 ){
      add_segment( i ) ;
@@ -284,7 +298,7 @@ double me_get_k(int id, double *k ) {
 
   int i, n[3];
   if (t==frs) t--;
-  const vector<double> &box = L.at(t);
+  const vector<double> &box = L.at(tt);
 
   me_unstack(id, n);
 
@@ -319,24 +333,15 @@ double me_get_k(int id, double *k ) {
 // interpolation scheme. From JCP V103 3668 //
 //////////////////////////////////////////////
 void add_segment( int id ) {
-
-
   
   int j, g_ind[Dim] , ix, iy, iz, nn[Dim] , Mindex, grid_ct; 
-  //double **W , gdx , W3;
-  
-  // double gdx , W3;
 
   double **W , gdx , W3;
   
   W = ( double** ) calloc( Dim , sizeof( double* ) );
 
-  std::vector<std::vector<double>> &x = xt.at(t);
+  std::vector<std::vector<double>> &x = xt.at(tt);
 
-  // std::cout<<t<<std::endl;
-  // std::cout<<L[t][0]<<std::endl;
-  // std::cout<<L[t][1]<<std::endl;
-  // std::cout<<L[t][2]<<std::endl;
 
   ///////////////////////////////////////////////
   // First, determine the relevant weights for //
@@ -350,7 +355,6 @@ void add_segment( int id ) {
     // Distance to nearest grid point if even //
     if ( pmeorder % 2 == 0 ) {
       g_ind[j] = int( ( x.at(id).at(j) + 0.5 * dx[j] ) / dx[j] ) ;
-
       gdx = x.at(id).at(j) - double( g_ind[j] ) * dx[j] ;
     }
  
@@ -452,7 +456,9 @@ void allocate_grid_variables(){
   
   pmeorder=1;
   tmp1.resize(M);
-  tmp2.resize(M);
+  // tmp1.resize(ntypes+1,std::vector<std::complex<double>> M);
+  // tmp2.resize(M);
+  tmp2.resize(ntypes+1,std::vector<std::complex<double>>(M));
   grid_per_particle = pow(pmeorder+1,3);
 
   grid_W.resize(nsites,std::vector<double>(grid_per_particle));
