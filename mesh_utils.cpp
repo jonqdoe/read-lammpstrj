@@ -456,7 +456,7 @@ void allocate_grid_variables(){
   grid_per_particle = pow(pmeorder+1,3);
 
   grid_W.resize(nsites,std::vector<double>(grid_per_particle));
-  rho.resize(nsites+1,std::vector<double>(M));
+  rho.resize(ntypes+1,std::vector<double>(M));
   grid_inds.resize(nsites,std::vector<int>(grid_per_particle));
 
 }
