@@ -62,7 +62,7 @@ void sq_routine(){
         for (int i = 0; i < tmp2.size(); i++){
           tmp2.at(i) /= frs;
         }
-      std::string strdata = "sq_avg."+to_string(frs)+".type"+to_string(type);
+      std::string strdata = "sq,avg."+to_string(frs)+".type"+to_string(type);
       write_kspace_data(strdata.c_str(), tmp2.data());
     }
 }
