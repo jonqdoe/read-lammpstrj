@@ -51,7 +51,7 @@ void sq_routine(){
         }
         
         if (per_frame_sq_flag == true){
-          std::string strdata = "sq.time"+to_string(t+fr1)+".type"+to_string(type);
+          std::string strdata = "sq.time."+to_string(t+fr1)+".type"+to_string(type);
           write_kspace_data(strdata.c_str(), tmp1.data());
         }
         for (int i = 0; i < tmp2.size(); i++){
@@ -62,7 +62,7 @@ void sq_routine(){
         for (int i = 0; i < tmp2.size(); i++){
           tmp2.at(i) /= frs;
         }
-      std::string strdata = "sq,avg."+to_string(frs)+".type"+to_string(type);
+      std::string strdata = "sq.avg."+to_string(frs)+".type"+to_string(type);
       write_kspace_data(strdata.c_str(), tmp2.data());
     }
 }
