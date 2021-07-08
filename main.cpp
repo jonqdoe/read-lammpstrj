@@ -227,7 +227,7 @@ int main( int argc, char* argv[] ) {
       cout << "CLUSTER " << endl;
       cout << "Required arguments:\n";
       cout << "  [type1] [type2] or \"all\"\n";
-      cout << "    all outputs a grid denisty for each type\n";
+      cout << "    Cluster analysis is based on all types used specified\n";
       cout << "  cutoff [distance] or \"all\"\n";
       exit(1);
     }
