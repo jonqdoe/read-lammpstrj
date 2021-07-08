@@ -13,7 +13,7 @@ vector<vector<vector<double>>> xt, computes ;
 #ifndef LAMMPSTRJ
 extern
 #endif
-vector<vector<double>> L ;
+vector<vector<double>> L, xlo, xhi;
 
 #ifndef LAMMPSTRJ
 extern

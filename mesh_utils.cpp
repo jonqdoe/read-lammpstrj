@@ -51,8 +51,8 @@ void sq_routine(){
         }
         
         if (per_frame_sq_flag == true){
-        std::string strdata = "sq_time"+to_string(t+fr1)+".type"+to_string(type);
-        write_kspace_data(strdata.c_str(), tmp1.data());
+          std::string strdata = "sq_time"+to_string(t+fr1)+".type"+to_string(type);
+          write_kspace_data(strdata.c_str(), tmp1.data());
         }
         for (int i = 0; i < tmp2.size(); i++){
         tmp2.at(i) += tmp1.at(i);

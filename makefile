@@ -2,8 +2,8 @@ CC 	   = mpic++ -std=c++11
 FFTW_HOME = ${HOME}/Install/fftw3
 FFTW_LOC = /opt/seas/pkg/gcc/fftw3/mpi/double/3.3.7
 EIGEN_LOC = ${HOME}/Install/eigen
-CFLAGS     = -O3 -I${FFTW_LOC}/include -Wno-unused-result -Wno-write-strings -std=c++11 -I${FFTW_HOME}/include
-LIBS      = -lm -O3 -lfftw3_mpi -lfftw3 -L${FFTW_LOC}/lib -L${FFTW_HOME}/lib
+CFLAGS     = -O0 -I${FFTW_LOC}/include -Wno-unused-result -Wno-write-strings -std=c++11 -I${FFTW_HOME}/include
+LIBS      = -lm -O0 -lfftw3_mpi -lfftw3 -L${FFTW_LOC}/lib -L${FFTW_HOME}/lib
 #CFLAGS     = -g -I${FFTW_LOC}/include -I${EIGEN_LOC} -Wno-unused-result -Wno-write-strings
 #LIBS      = -g -lm -lfftw3_mpi -lfftw3 -L${FFTW_LOC}/lib
 
@@ -13,7 +13,7 @@ LIBS      = -lm -O3 -lfftw3_mpi -lfftw3 -L${FFTW_LOC}/lib -L${FFTW_HOME}/lib
 
 SRCS = main.cpp read_lammpstrj.cpp pbc_utils.cpp log_space.cpp \
        msd.cpp rdf.cpp lc_order.cpp nl-utils.cpp fftw_mpi_wrappers.cpp \
-	   van-hove.cpp io_utils.cpp mesh_utils.cpp
+	   van-hove.cpp io_utils.cpp mesh_utils.cpp trim_lammpstrj.cpp cluster_analysis.cpp
 
 TAGS := .tags
        

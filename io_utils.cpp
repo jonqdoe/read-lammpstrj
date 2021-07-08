@@ -22,45 +22,24 @@ void write_kspace_data( const char *lbl , std::complex<double> *kdt ) {
   double kv[3], k2 ;
   
   char nm[80] ;
-  // sprintf( nm, "%s.p.dat" , lbl ) ;
 
   sprintf( nm, "data/%s.%d.dat" , lbl,t ) ;
   char *mm;
   mm = (char*) nm;
 
-  // char *mode = new char[100];
-  // sprintf(mode,"w");
   char *mode= strdup("w");
   char *hehe;
   hehe = (char*) "w";
   otp = fopen_mkdir(mm,hehe);
 
-
-
-
-  // fprintf( otp ,"step %d ,post_spin_dt= %lf\n", t, (step-sample_wait)*delt );
-
-  // cout<< i <<'\t'<< nn[0]<<'\t'<<nn[1]<<'\t'<<nn[2]<<"\t"<<M<<endl;
   for ( i=1 ; i<M ; i++ ) {
     me_unstack( i , n) ;
 
-  // cout<< i <<'\t'<< nn[0]<<'\t'<<nn[1]<<'\t'<<nn[2]<<"\t"<<M<<endl;
     k2 = me_get_k( i , kv ) ;
-    if (k2 >= 10) continue;
-  // cout<< i <<'\t'<< nn[0]<<'\t'<<nn[1]<<'\t'<<nn[2]<<"\t"<<M<<endl;
-    // cout<< i<<"\t"<<kv<<'\t'<<k2<<endl;
-    // cout<<i<<endl;
-    // cout<<k2<<endl;
-
-    // for ( j=0 ; j<Dim ; j++ ) 
-    //   fprintf( otp , "%lf " , kv[j] ) ;
+    if ((k2 >= k2_cutoff) && (k2_cutoff > 0) ) continue; 
 
     fprintf( otp , "%d %1.5e %1.5e %1.5e %1.5e\n" , t, abs(kdt[i]), sqrt(k2), 
        real(kdt[i]) , imag(kdt[i]) ) ;
-    // fprintf( otp , "%1.5e %1.5e %1.5e\n" ,abs(kdt[i]), (k2), 
-    //     real(kdt[i]) ) ;
-    //if ( Dim == 2 && nn[0] == Nx[0]-1 )
-      //fprintf( otp , "\n" ) ;
   }
 
   fclose( otp ) ;
@@ -83,13 +62,9 @@ void write_grid_data( const char *nm , double *dat ) {
       fprintf( otp , "%lf " , double(nn[j]) * dx[j] ) ;
     
     fprintf( otp , "%1.16e \n" , dat[i] ) ;
-    
-    // if ( Dim == 2 && nn[0] == Nx[0]-1 )
-    //   fprintf( otp , "\n" ) ;
   }
 
   fclose( otp ) ;
-
 }
 
 

@@ -19,7 +19,7 @@ std::vector<std::complex<double>> tmp1, tmp2 ;
 #ifndef MESHUTILS
 extern
 #endif
-double dx[3], Lh[3], V, gvol;
+double dx[3], Lh[3], V, gvol, k2_cutoff;
 
 #ifndef MESHUTILS
 extern
