@@ -2,7 +2,7 @@
 #include "fftw.h"
 
 // Forward transform 
-void fftw_fwd(float* in, complex<double>* out, int M) {
+void fftw_fwd(const double* in, complex<double>* out, int M) {
 
   int i;
 
@@ -53,6 +53,7 @@ int fft_init( int Nx[3] ) {
 
   int i, b , total_alloced = 0 ;
   I = complex<double>(0.0,1.0);
+
 
   for ( i=0 ; i<3 ; i++ ) 
     NxL[i] = Nx[i] ;

@@ -5,7 +5,8 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
-#include "fftw3-mpi.h"
+#include <fftw3.h>
+#include <fftw3-mpi.h>
 using namespace std ;
 
 #ifndef FFTW
@@ -27,3 +28,11 @@ fftw_plan fwd0, fbk0 ;
 extern
 #endif
 complex<double> I;
+
+
+#ifndef FFTW_H
+#define FFTW_H
+int fft_init( int Nx[3] );
+
+void fftw_fwd(const double* in, complex<double>* out, int M);
+#endif
