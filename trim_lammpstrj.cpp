@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <vector>
 #include <algorithm>
+#include <math.h>
 using namespace std;
 
 #include "lammpstrj.h"
@@ -54,8 +55,8 @@ int trim_lammpstrj(const char* name, float border, bool sep_files) {
 
 
             for (int j = 0; j < Dim; j++) {
-                if (abs(xt[t][ns][j] - xlo[t][j]) < abs(border) 
-                    || abs(xt[t][ns][j] - xhi[t][j]) < abs(border)  ){
+                if (fabs(xt[t][ns][j] - xlo[t][j]) < fabs(border) 
+                    || fabs(xt[t][ns][j] - xhi[t][j]) < fabs(border)  ){
                         rejected=true;
                         rejected_molecules.push_back(mol[ns]);
                         break;
