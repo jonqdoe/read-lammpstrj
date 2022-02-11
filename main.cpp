@@ -46,14 +46,14 @@ int main( const int argc, const char* argv[] ) {
 
 
   if ( calc_type == "RDF" ) {
-#include "nl_globals.h"
+/*#include "nl_globals.h"
 
     void make_nlist(int, vector<vector<double>>, vector<double>, double);
     make_nlist(nsites, xt[2], L[2], 2.75);
     for ( int i=0 ; i<2500 ; i+=500 )
       cout << i << " " << neigh_ct[i] << endl;
     exit(1);
-
+*/
     if ( argc < 8 ) {
         cout << "Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index] ";
         cout << "RDF [dr_bin] [type1] [type2]" << endl;
