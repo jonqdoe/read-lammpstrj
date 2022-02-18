@@ -11,6 +11,7 @@ void log_space(int,int,int);
 double pbc_mdr2(vector<double>, vector<double>, vector<double>, vector<double>);
 
 void calc_msd( vector<vector<vector<double>>> xt,
+    const vector<int> site_list,
     const int nsites, 
     const int nfr, 
     vector<vector<double>> L ) {
@@ -26,10 +27,11 @@ void calc_msd( vector<vector<vector<double>>> xt,
     for ( int t=0 ; t<nfr-delt ; t++ ) {
 
       for ( int i=0 ; i<nsites ; i++ ) {
+        int id = site_list[i];
 
         double mdr2 = 0.0;
         for ( int j=0 ; j<3 ; j++ ) {
-          dr[j] = xt[t+delt][i][j] - xt[t][i][j] ;
+          dr[j] = xt[t+delt][id][j] - xt[t][id][j] ;
           mdr2 += dr[j] * dr[j];
         }
 

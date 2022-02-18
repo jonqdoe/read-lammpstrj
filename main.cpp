@@ -22,7 +22,7 @@ void connect_molecules(vector<vector<vector<double>>>&, vector<int>, int, int,
     vector<vector<double>>) ;
 void remove_pbc_time_jumps(vector<vector<vector<double>>>&, int, int, vector<vector<double>>) ;
 void lc_order(vector<vector<vector<double>>>, int, int, vector<int>, int, int);
-void calc_msd(vector<vector<vector<double>>>, const int, const int, vector<vector<double>> );
+void calc_msd(vector<vector<vector<double>>>, const vector<int>, const int, const int, vector<vector<double>> );
 void calc_rdf(double, string, string);
 void nlist_init(void);
 void van_hove(vector<vector<vector<double>>>, int, int, int, double, vector<vector<double>> );
@@ -54,14 +54,15 @@ int main( int argc, char* argv[] ) {
 
 
   if ( calc_type == "RDF" ) {
-    #include "nl_globals.h"
+
+  /*#include "nl_globals.h"
 
     void make_nlist(int, vector<vector<double>>, vector<double>, double);
     make_nlist(nsites, xt[2], L[2], 2.75);
     for ( int i=0 ; i<2500 ; i+=500 )
       cout << i << " " << neigh_ct[i] << endl;
     exit(1);
-
+*/
     if ( argc < 8 ) {
         cout << "Usage: postproc-lammpstrj [input.lammpstrj] [first frame index] [last frame index] ";
         cout << "RDF [dr_bin] [type1] [type2]" << endl;
@@ -76,14 +77,52 @@ int main( int argc, char* argv[] ) {
 
   else if ( calc_type == "MSD" ) {
     cout << "MSD optional arguments: " << endl;
-    cout << "sitemax [integer], maximum number of sites to use in MSD calculation, ignoring some sites at the end of the position array" << endl;
+    cout << "sitemax [integer], max number of sites to use in MSD, ignoring some sites at the end of the position array" << endl;
+    cout << "type [integer], particle type on which to calculate MSD." << endl;
 
-    if ( argc == 6 )
-      nsites = atoi( argv[5] );
+
+    // Set default list of sites to calculate MSD for
+    int ns_msd = nsites;
+
+    vector<int> site_list(ns_msd,0);
+    for ( int i=0 ; i<ns_msd ; i++ ) {
+      site_list[i] = i;
+    }
+
+
+
+    if ( argc > 5 ) {
+      string opts(argv[5]);
+      if ( opts == "sitemax" ) {
+        ns_msd = atoi(argv[6]);
+      }
+
+      else if ( opts == "type" ) {
+        if ( !has_type ) {
+          cout << "ERROR: TYPE NOT INCLUDED IN LAMMPSTRJ FILE" << endl;
+          exit(1);
+        }
+
+        ns_msd = 0;
+        int msd_typ = atoi(argv[6]);
+        for ( int i=0 ; i<nsites; i++ ) {
+          if (type[i] == msd_typ) {
+            site_list[ns_msd] = i;
+            ns_msd++;
+          }
+        }
+        cout << "Found " << ns_msd << " sites of type " << msd_typ << endl;
+        if ( ns_msd == 0 ) {
+          cout << "ERROR: FOUND NO SITES OF THE GIVEN TYPE!" << endl;
+          exit(1);
+        }
+      }// opts == type
+    }// Extra arguments (args = 6)
+    
 
     remove_pbc_time_jumps(xt, nsites, frs, L);
 
-    calc_msd(xt, nsites, frs, L);
+    calc_msd(xt, site_list, ns_msd, frs, L);
   } // MSD calculation
 
   else if ( calc_type == "VAN-HOVE" ) {
