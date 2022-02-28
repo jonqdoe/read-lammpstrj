@@ -1,149 +1,125 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <iostream>
+#include <math.h>
 using namespace std ;
 
 #define MESHUTILS
+#define Dim 3
 #include "mesh_globals.h"
 
 void lagrange_get_weights( double , double , double* ) ;
 void spline_get_weights( double , double , double* ) ;
 void add_charge( int ) ;
+void charge_grid(void);
 
 
-///////////////////////////////////
-// Add all particles to the grid //
-///////////////////////////////////
-void fill_grid( ) {
+int t=0,tt=0;
 
-  int i, id;
+void sq_routine(){
 
-  for ( i=0 ; i<M ; i++ ) 
-    rhoc[i] = 0.0 ;
+    fft_init(Nx);
+
+    allocate_grid_variables();
+
+    for (vector<complex<double>> &x: tmp2)
+      fill(x.begin(), x.end(), 0.0f);
+
+    for (tt=0; tt<frs; tt++) {
+        t = tt+fr1;
+        printf("\rTimestep %d out of %d", tt, frs); fflush( stdout );
+
+        V = 1; 
+        vector<double> &Lloc = L.at(tt);
+        for (int j=0 ; j<Dim ; j++ ) {
+          V *= Lloc.at(j) ;
+          dx[j] = Lloc.at(j)/Nx[j]; 
+          Lh[j] = 0.5 * Lloc[j] ;
+        }
+        gvol = V / double( M ) ;
+
+        for (auto &x: tmp1){ x = 0.0f; }
+        // for (auto &x: tmp2){ x = 0.0f; }
 
 
-  for ( i=0 ; i<ncharge ; i++ )  {
-    id = chg_list[i] ;
+        charge_grid();
 
-    add_particle( id ) ;
+        for (auto type : unique_types){
+
+          const vector<double> &tmp_rho = rho.at(type);
+
+          fftw_fwd( tmp_rho.data(), tmp1.data(), M ) ;
+
+          for (int i=0 ; i<M ; i++ ){
+            tmp2.at(type).at(i) += tmp1.at(i);
+            tmp1.at(i) = tmp1.at(i) * conj(tmp1.at(i)) ;
+          }
+          
+          if (per_frame_sq_flag == true || frs == 1){
+            std::string strdata = "sq.time."+to_string(t)+".type"+to_string(type);
+            write_kspace_data(strdata.c_str(), tmp1.data());
+          }
+          // for (int i = 0; i < tmp2.size(); i++){
+          // tmp2.at(i) += tmp1.at(i);
+          // }
+        }
+      
+
+    }
+
+    tt--;
+
+    if (frs > 1){
+      for (auto type : unique_types){
+        for (int i = 0; i < tmp2.size(); i++){
+          tmp2.at(type).at(i) = tmp2.at(type).at(i) * conj(tmp2.at(type).at(i)) ;
+          tmp2.at(type).at(i) /= frs;
+        }
+          std::string strdata = "sq.avg."+to_string(fr1)+"_"+to_string(fr2)+".type"+to_string(type);
+          write_kspace_data(strdata.c_str(), tmp2.at(type).data());
+        }
+    }
+}
+
+void charge_grid(void){
+
+  int i, j;
+  
+  // for ( i=0 ; i<M ; i++ ) 
+  //   for ( j=0 ; j<ntypes ; j++ ) 
+  //     rho[j][i] = 0.0 ;
+  for (vector<double> &x: rho)
+    fill(x.begin(), x.end(), 0.0f);
+
+
+  ////////////////////////////////////////////////////
+  // Add segments to each processors density fields //
+  ////////////////////////////////////////////////////
+
+  int id=9;
+  j=0;
+  int t=0;
+
+  for ( i=0 ; i<nsites; i++ ) {
+    if ( type.at(i) != -1 ){
+     add_segment( i ) ;
+     }
   }
 
 }
 
-
-
-//////////////////////////////////////////////
-// Adds the charge associated with particle //
-// "id" to the PME grid using Lagrange      //
-// interpolation scheme. From JCP V103 3668 //
-//////////////////////////////////////////////
-void add_charge( int id ) {
-
-  int j, g_ind[3] , ix, iy, iz, nn[3] , Mindex, grid_ct; 
-  double **W , dx , W3;
-  
-  W = ( double** ) calloc( 3 , sizeof( double* ) );
-
-
-
-  ///////////////////////////////////////////////
-  // First, determine the relevant weights for //
-  // all grid points in all directions.        //
-  ///////////////////////////////////////////////
-  for ( j=0 ; j<3 ; j++ ) {
-
-    W[j] = ( double* ) calloc( pmeorder+1 , sizeof( double ) );
-
-
-    // Distance to nearest grid point if even //
-    if ( pmeorder % 2 == 0 ) {
-      g_ind[j] = int( ( x[id][j] + bh[j] + 0.5 * gdx[j] ) / gdx[j] ) ;
-
-      dx = x[id][j] + bh[j] - double( g_ind[j] ) * gdx[j] ;
-    }
- 
-
-    // Distance to nearest mid-point between grid points if odd //
-    else {
-      g_ind[j] = int( ( x[id][j] + bh[j] ) / gdx[j] ) ;
-
-      dx = x[id][j] + bh[j] - ( double( g_ind[j] ) + 0.5 ) * gdx[j] ;
-    }
-
-
-    /////////////////////////////////////////
-    // Get the weights for each grid point //
-    /////////////////////////////////////////
-    if ( ljtype == 2 ) 
-      lagrange_get_weights( dx , gdx[j] , W[j] );
-
-    else if ( ljtype == 3 ) 
-      spline_get_weights( dx , gdx[j] , W[j] );
-
-  }//for ( j=0 ; j<3...
-
-
-
-  ////////////////////////////////////////////////////
-  // Assign the weights to all relevant grid points //
-  ////////////////////////////////////////////////////
-  grid_ct = 0 ;
-  for ( ix = 0 ; ix < pmeorder+1 ; ix++ ) {
-    
-    nn[0] = g_ind[0] + ix - ( pmeorder/2 + pmeorder % 2 );
-    
-    if ( nn[0] < 0 ) nn[0] += Nx[0] ;
-    else if ( nn[0] >= Nx[0] ) nn[0] -= Nx[0] ;
-
-    for ( iy = 0 ; iy < pmeorder+1 ; iy++ ) {
-
-      nn[1] = g_ind[1] + iy - ( pmeorder/2 + pmeorder % 2 ) ;
-      
-      if ( nn[1] < 0 ) nn[1] += Nx[1] ;
-      else if ( nn[1] >= Nx[1] ) nn[1] -= Nx[1] ;
-
-      for ( iz = 0 ; iz < pmeorder+1 ; iz++ ) {
-
-        nn[2] = g_ind[2] + iz - ( pmeorder/2 + pmeorder % 2 ) ;
-        
-        if ( nn[2] < 0 ) nn[2] += Nx[2] ;
-        else if ( nn[2] >= Nx[2] ) nn[2] -= Nx[2] ;
-
-
-        Mindex = me_stack( nn ) ;
-
-        if ( Mindex >= M )
-          die("INDEX OUT OF RANGE\n");
-
-        W3 = W[0][ix] * W[1][iy] * W[2][iz] ;
-
-        rhoc[Mindex] += W3 * charge[id] ;
-
-        grid_inds[ id ][ grid_ct ] = Mindex ;
-        grid_W[ id ][ grid_ct ] = W3 ;
-
-        grid_ct++ ;
-
-      }
-    }
-  }
-
-
-
-  ///////////////////////////
-  // Free allocated memory //
-  ///////////////////////////
-  for ( j=0 ; j<3 ; j++ ) 
-    free( W[j] ) ;
-
-  free(W) ;
-
-}// End lagrange add charge
-
-
-
-
-
+///////////////////////////////////
+// Add all particles to the grid //
+///////////////////////////////////
+// void fill_grid( ) {
+//   int i, id;
+//   for ( i=0 ; i<M ; i++ ) 
+//     rhoc[i] = 0.0 ;
+//   for ( i=0 ; i<ncharge ; i++ )  {
+//     id = chg_list[i] ;
+//     add_particle( id ) ;
+//   }
+// }
 
 
 ///////////////////////////////////////////////////////////////////
@@ -217,9 +193,9 @@ void lagrange_get_weights( double dx , double H , double *W ) {
 
   else {
     cout << "PME order is " << pmeorder << endl;
-    die("PME not set up for this interpolation order!\n");
+    cout << "PME not set up for this interpolation order!" << endl;
+    exit(1);
   }
-
 
 }
 
@@ -285,7 +261,10 @@ void spline_get_weights( double dx , double H , double *W ) {
 
 
   else
-    die("P3M not set up for this interpolation order!\n");
+    {
+      cout << "P3M not set up for this interpolation order!" <<endl;
+      exit(10);
+    }
 
 }
 
@@ -296,8 +275,6 @@ void spline_get_weights( double dx , double H , double *W ) {
 int me_stack(int x[3]) {
   return  (x[0] + (x[1] + x[2]*Nx[1])*Nx[0] );
 }
-
-
 
 
 
@@ -320,6 +297,8 @@ double me_get_k(int id, double *k ) {
   double kmag = 0.0;
 
   int i, n[3];
+  if (t==frs) t--;
+  const vector<double> &box = L.at(tt);
 
   me_unstack(id, n);
 
@@ -345,35 +324,145 @@ double me_get_k(int id, double *k ) {
 
 }
 
-double me_get_mk( int id , double *mk) {
 
-  double kmag = 0.0;
 
-  int i, n[3];
 
-  me_unstack(id, n);
+//////////////////////////////////////////////
+// Adds the segment associated with particle //
+// "id" to the PME grid using Lagrange      //
+// interpolation scheme. From JCP V103 3668 //
+//////////////////////////////////////////////
+void add_segment( int id ) {
+  
+  int j, g_ind[Dim] , ix, iy, iz, nn[Dim] , Mindex, grid_ct; 
 
-  if ( double(n[0]) < double(Nx[0]) / 2. )
-    mk[0] = 2*PI*double(n[0])/gdx[0];
-  else
-    mk[0] = 2*PI*double(n[0]-Nx[0])/gdx[0];
+  double **W , gdx , W3;
+  
+  W = ( double** ) calloc( Dim , sizeof( double* ) );
 
-  if ( double(n[1]) < double(Nx[1]) / 2. )
-    mk[1] = 2*PI*double(n[1])/gdx[1];
-  else
-    mk[1] = 2*PI*double(n[1]-Nx[1])/gdx[1];
+  std::vector<std::vector<double>> &x = xt.at(tt);
 
-  if ( double(n[2]) < double(Nx[2]) / 2. )
-    mk[2] = 2*PI*double(n[2])/gdx[2];
-  else
-    mk[2] = 2*PI*double(n[2]-Nx[2])/gdx[2];
 
-  for (i=0; i<3; i++)
-    kmag += mk[i]*mk[i];
+  ///////////////////////////////////////////////
+  // First, determine the relevant weights for //
+  // all grid points in all directions.        //
+  ///////////////////////////////////////////////
 
-  return kmag;
+  for ( j=0 ; j<Dim ; j++ ) {
+
+   W[j] = ( double* ) calloc( pmeorder+1 , sizeof( double ) );
+
+    // Distance to nearest grid point if even //
+    if ( pmeorder % 2 == 0 ) {
+      g_ind[j] = int( ( x.at(id).at(j) + 0.5 * dx[j] ) / dx[j] ) ;
+      gdx = x.at(id).at(j) - double( g_ind[j] ) * dx[j] ;
+    }
+ 
+
+    // Distance to nearest mid-point between grid points if odd //
+    else {
+      g_ind[j] = int( ( x.at(id).at(j)  ) / dx[j] ) ;
+      if ( g_ind[j] >= Nx[j] ){
+      g_ind[j] = Nx[j]-1;
+      }
+      gdx = x.at(id).at(j)  - ( double( g_ind[j] ) + 0.5 ) * dx[j] ;
+    }
+
+
+    /////////////////////////////////////////
+    // Get the weights for each grid point //
+    /////////////////////////////////////////
+
+      spline_get_weights( gdx , dx[j] , W[j] );
+
+  }//for ( j=0 ; j<3...
+
+
+  ////////////////////////////////////////////////////
+  // Assign the weights to all relevant grid points //
+  ////////////////////////////////////////////////////
+  grid_ct = 0 ;
+  
+  ///////////////////////////////////////////
+  // 3D version of particle-to-mesh scheme //
+  ///////////////////////////////////////////
+  if ( Dim == 3 ) {
+    for ( ix = 0 ; ix < pmeorder+1 ; ix++ ) {
+      // cout<<g_ind[0]<<"\t"<<ix<<'\t'<<( pmeorder/2 + pmeorder % 2 )<<endl; 
+      nn[0] = g_ind[0] + ix - ( pmeorder/2 + pmeorder % 2 );
+      
+      if ( nn[0] < 0 ) nn[0] += Nx[0] ;
+      else if ( nn[0] >= Nx[0] ) nn[0] -= Nx[0] ;
+  
+      for ( iy = 0 ; iy < pmeorder+1 ; iy++ ) {
+  
+        nn[1] = g_ind[1] + iy - ( pmeorder/2 + pmeorder % 2 ) ;
+        
+        if ( nn[1] < 0 ) nn[1] += Nx[1] ;
+        else if ( nn[1] >= Nx[1] ) nn[1] -= Nx[1] ;
+  
+        for ( iz = 0 ; iz < pmeorder+1 ; iz++ ) {
+  
+          nn[2] = g_ind[2] + iz - ( pmeorder/2 + pmeorder % 2 ) ;
+          
+          if ( nn[2] < 0 ) nn[2] += Nx[2] ;
+          else if ( nn[2] >= Nx[2] ) nn[2] -= Nx[2] ;
+  
+  
+          // stack() returns index in [0,M]
+            Mindex = me_stack( nn ) ;
+  
+          if ( Mindex >= M ) {
+            char nm[80] ;
+            sprintf(nm, "%d Index = %d out of range, particle %d %lf %lf %lf\n" , 
+                t, Mindex, id , x[id][0], x[id][1], x[id][2] ) ;
+            cout << nm << endl;
+
+            // die(nm) ;
+            exit(10);
+          }
+          // if (id==M-2)
+        // cout<<"I was playing possu"<<endl;
+  
+          W3 = W[0][ix] * W[1][iy] * W[2][iz] / gvol ;
+  
+          
+          rho.at(type.at(id)).at(Mindex) += W3; 
+
+  
+          grid_inds[ id ][ grid_ct ] = Mindex ;
+          grid_W[ id ][ grid_ct ] = W3 ;
+  
+          grid_ct++ ;
+  
+        }
+      }
+    }
+  }
+
+
+  ///////////////////////////
+  // Free allocated memory //
+  ///////////////////////////
+ for ( j=0 ; j<Dim ; j++ ) 
+   free( W[j] ) ;
+
+ free(W) ;
+
+}// End lagrange add charge
+
+
+void allocate_grid_variables(){
+  
+  pmeorder=1;
+  tmp1.resize(M);
+  // tmp1.resize(ntypes+1,std::vector<std::complex<double>> M);
+  // tmp2.resize(M);
+  tmp2.resize(ntypes+1,std::vector<std::complex<double>>(M));
+  grid_per_particle = pow(pmeorder+1,3);
+
+  grid_W.resize(nsites,std::vector<double>(grid_per_particle));
+  rho.resize(ntypes+1,std::vector<double>(M));
+  grid_inds.resize(nsites,std::vector<int>(grid_per_particle));
 
 }
-
-
-

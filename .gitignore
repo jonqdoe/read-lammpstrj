@@ -1,0 +1,6 @@
+objects/
+postproc-lammpstrj
+.tags
+data/
+output/
+.vscode/

@@ -40,9 +40,14 @@ int read_lammpstrj( const char* name, const int frame1, const int lastframe) {
 
   int frs = lastframe - frame1 ;
 
+  xhi.resize(frs,std::vector<double>(3));
+  xlo.resize(frs,std::vector<double>(3));
 
   string st_name(name);
   ifstream inp(st_name);
+  if (not inp.is_open()) {
+    cout << "Cannot open file " + st_name << endl;
+  }
   while ( !inp.eof() ) {
     // READ TIMESTEP
     getline(inp, line);
@@ -81,11 +86,17 @@ int read_lammpstrj( const char* name, const int frame1, const int lastframe) {
 
       string todub ;
       bx >> todub ;
-      double xlo = stod(todub);
+      double xlotmp = stod(todub);
       bx >> todub ;
-      double xhi = stod(todub);
+      double xhitmp = stod(todub);
 
-      if ( nread >= frame1 ) L[nread-frame1][j] = xhi - xlo ;
+      if ( nread >= frame1 ) {
+        double index = nread - frame1;
+        xhi.at(nread-frame1).at(j)= xhitmp;
+        xlo.at(nread-frame1).at(j)= xlotmp;
+        L[nread-frame1][j] = xhi.at(nread-frame1).at(j) - xlo.at(nread-frame1).at(j) ;
+      }
+      
     }
 
 
